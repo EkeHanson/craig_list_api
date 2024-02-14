@@ -29,6 +29,7 @@ This project aims to create a simple web app inspired by Craigslist. Users can l
 3. Fields for the API requestswith the following keys:
    - `id`: Unique identifier for each listing
    - `description`: Item description
+   - `Unique Product Identifiers`: This number uniquely identifies the product in the eyes of the customer/user
    - `image`: URL to item image
    - `location`: Item location
    - `price`: Item price

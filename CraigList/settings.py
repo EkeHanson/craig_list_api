@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
     # created apps
     'user_registration',
+    'products',
     
     # installed apps
     'allauth',
@@ -130,6 +131,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'social.apps.django_app.context_processors.backends',
     'social.apps.django_app.context_processors.login_redirect',
 )
+
+MEDIA_URL = '/media/'  # Base URL to serve media files
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  # Path where media files are stored
 
 
 # Password validation

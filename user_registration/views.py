@@ -19,7 +19,7 @@ from django.utils import timezone
 #     model = CustomUser
 #     fields = ["username", "email", "password"]
 #     success_url = reverse_lazy("success_url_name")  # Change this with your own URL
-#
+
 #     def form_valid(self, form):
 #         # Create the user object
 #         user = form.save(commit=False)
@@ -27,17 +27,17 @@ from django.utils import timezone
 #         user.set_password(form.cleaned_data.get("password"))
 #         # Save the User object to the database
 #         user.save()
-#
+
 #         # Get email and password
 #         email = form.cleaned_data.get("email")
 #         password = form.cleaned_data.get("password")
-#
+
 #         # Authenticate the user with the unhashed password
 #         authenticated_user = authenticate(email=email, password=password)
-#
+
 #         # Log in the user
 #         login(self.request, authenticated_user)
-#
+
 #         return redirect(self.success_url)
 
 
@@ -59,7 +59,6 @@ class CreateUserAPIView(APIView):
             serializer.save()
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 def generate_reset_token():

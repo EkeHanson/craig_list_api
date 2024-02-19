@@ -5,9 +5,11 @@ from datetime import date
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password, user_type, date_of_birth, **extra_fields):
+    def create_user(self, email, password, user_type, **extra_fields):
         email = self.normalize_email(email)
-        user = self.model(email=email, user_type=user_type, date_of_birth=date_of_birth, **extra_fields)
+
+        user = self.model(email = email, user_type=user_type, **extra_fields)
+
         user.set_password(password)
         user.save()
         return user
@@ -32,7 +34,7 @@ class CustomUser(AbstractBaseUser):
 
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    bio = models.TextField(max_length=255)  # Specify a maximum length for the bio
+    bio = models.TextField()  
     email = models.EmailField(max_length=80, unique=True)
     date_of_birth = models.DateField(null=False)  # Ensure date_of_birth is not null
     user_type = models.CharField(max_length=10, choices=[('owner', 'Owner'), ('admin', 'Admin'), ('client', 'Client')])

@@ -11,6 +11,10 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from django.conf import settings
+from django.conf.urls.static import static
+
+
 schema_view = get_schema_view(
    openapi.Info(
       title="Snippets API",
@@ -27,6 +31,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user_registration.urls')),
+    path('', include('products.urls')),
 
     # swagger ui
     path('<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
@@ -38,3 +43,6 @@ urlpatterns = [
     path('jwt_refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('jwt_verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

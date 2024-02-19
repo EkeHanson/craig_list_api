@@ -107,7 +107,7 @@ DATABASES = {
     }
 }
 
-DATABASES['default'] = dj_database_url.parse('postgres://craig_list:zvEphYMNdjRqQCFErLUXVOj9WAWsNer5@dpg-cn6tmfgl5elc738j713g-a.oregon-postgres.render.com/craig_list')
+# DATABASES['default'] = dj_database_url.parse('postgres://craig_list:zvEphYMNdjRqQCFErLUXVOj9WAWsNer5@dpg-cn6tmfgl5elc738j713g-a.oregon-postgres.render.com/craig_list')
 
 
 REST_FRAMEWORK = {
@@ -126,6 +126,17 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+
+# Email configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Your SMTP server address
+EMAIL_PORT = 587  # Your SMTP server port (587 is the default for SMTP with TLS)
+EMAIL_USE_TLS = True  # Whether to use TLS (True by default)
+EMAIL_HOST_USER = 'ekenehanson@gmail.com'  # Your email address
+EMAIL_HOST_PASSWORD = 'pduw cpmw dgoq adrp'  # Your email password or app-specific password if using Gmail, etc.
+DEFAULT_FROM_EMAIL = 'ekenehanson@gmail.com'  # The default email address to use for sending emails
+
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'social.apps.django_app.context_processors.backends',

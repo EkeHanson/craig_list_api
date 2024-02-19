@@ -47,7 +47,7 @@ class ProductListAPIView(APIView):
 
         products = Product.objects.all()
         # Create a Paginator object with 5 items per page
-        paginator = Paginator(products, 5)
+        paginator = Paginator(products, 15)
 
         # Get the requested page number
         page_number = request.GET.get('page')

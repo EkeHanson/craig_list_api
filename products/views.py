@@ -31,6 +31,7 @@
 from django.core import paginator
 from django.core.paginator import Paginator
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -40,6 +41,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from .models import Product, Cart, CartItem, Order
 from .serializer import ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer
+from user_registration.models import CustomUser
 
 
 class ProductListAPIView(APIView):
@@ -91,21 +93,22 @@ class CartListAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class CartItemListAPIView(APIView):
-#     def get(self, request):
-#         cart_items = CartItem.objects.all()
-#         serializer = CartItemSerializer(cart_items, many=True)
-#         return Response(serializer.data)
-#
-#     def post(self, request):
-#         serializer = CartItemSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class CartItemListAPIView(APIView):
+    def get(self, request):
+        cart_items = CartItem.objects.all()
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = CartItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AddToCartView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
         cart, created = Cart.objects.get_or_create(user=request.user)
@@ -116,6 +119,7 @@ class AddToCartView(APIView):
 
 
 class RemoveFromCartView(APIView):
+    permission_classes = [IsAuthenticated]
     def delete(self, request, cart_item_id):
         cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=request.user)
         cart_item.delete()
@@ -154,8 +158,8 @@ class OrderList(APIView):
 #     return Response(serializer.data)
 
 @api_view(http_method_names=['GET'])
-def search_product(request: Request):
-    search = request.query_params.get('search')
+def search_product(request: Request, search):
+    search = request.query_params.get(search, '')
     if search:
         products = Product.objects.filter(
             Q(name__icontains=search) |
@@ -168,3 +172,20 @@ def search_product(request: Request):
         products = Product.objects.all()
     serializer = ProductSerializer(products, many=True)
     return Response(serializer.data)
+
+
+@api_view(http_method_names=['GET'])
+def product_by_category(request: Request, category):
+    product = Product.objects.filter(category=category)
+    if product:
+        serializer = ProductSerializer(product, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    elif category == 'all':
+        product = Product.objects.all()
+        serializer = ProductSerializer(product, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    return Response(data='Error', status=status.HTTP_404_NOT_FOUND)
+
+
+
+

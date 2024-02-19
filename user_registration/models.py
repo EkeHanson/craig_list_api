@@ -26,9 +26,13 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser):
-    first_name = models.CharField(max_length=10)
-    last_name = models.CharField(max_length=10)
-    bio = models.TextField(max_length=200)  # Specify a maximum length for the bio
+    #fields to store the password reset token and its expiration time in your CustomUser model.
+    reset_token = models.CharField(max_length=100, blank=True, null=True)
+    reset_token_expires = models.DateTimeField(null=True, blank=True)
+
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    bio = models.TextField(max_length=255)  # Specify a maximum length for the bio
     email = models.EmailField(max_length=80, unique=True)
     date_of_birth = models.DateField(null=False)  # Ensure date_of_birth is not null
     user_type = models.CharField(max_length=10, choices=[('owner', 'Owner'), ('admin', 'Admin'), ('client', 'Client')])
@@ -46,3 +50,4 @@ class CustomUser(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+    

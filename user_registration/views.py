@@ -11,6 +11,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 import secrets
 import datetime
+from django.utils import timezone
 
 
 
@@ -53,7 +54,6 @@ class CreateUserAPIView(APIView):
 
 
     def post(self, request: Request):
-        print(request.data)
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -73,7 +73,8 @@ def send_reset_email(user):
     user.save()
     send_mail(
         subject = 'Password Reset',
-        message = 'Please click the following link to reset your password: http://127.0.0.1:9090/user/password/reset/confirm/?reset_token=' + reset_token,
+        message = f'''Please click the following link to reset your password: http://127.0.0.1:9090/user/password/reset/confirm/?reset_token={reset_token}
+                        or copy this  reset_token {reset_token} to the application''' ,
         from_email = 'ekenehanson@gmail.com',  # Update with your email address
         recipient_list = [user.email],  # Send email to the user's email address
         fail_silently = False,
@@ -95,8 +96,11 @@ class PasswordResetConfirmAPIView(APIView):
         # Retrieve the user based on the reset_token
         user = get_object_or_404(CustomUser, reset_token=reset_token)
 
+        # Get the current datetime in UTC timezone
+        current_datetime = timezone.now()
+
         # Check if the reset token is expired
-        if user.reset_token_expires < datetime.datetime.now():
+        if user.reset_token_expires < current_datetime:
             return Response({'error': 'Reset token has expired'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Set the new password

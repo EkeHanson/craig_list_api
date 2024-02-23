@@ -44,6 +44,7 @@ from django.utils import timezone
 class CreateUserAPIView(APIView):
 
     def get(self, request: Request):
+        print("I am working")
 
         users = CustomUser.objects.all()
         if users:

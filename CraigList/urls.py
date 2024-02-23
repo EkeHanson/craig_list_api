@@ -39,9 +39,9 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
     # used to get tokens
-    path('jwt_token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('jwt_refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('jwt_verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('jwt_token/', TokenObtainPairView.as_view(), name='token-obtain_pair'),
+    path('jwt_refresh/', TokenRefreshView.as_view(), name='token-refresh'),
+    path('jwt_verify/', TokenVerifyView.as_view(), name='token-verify'),
 ]
 
 if settings.DEBUG:

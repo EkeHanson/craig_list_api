@@ -1,34 +1,3 @@
-# from django.shortcuts import render
-#
-# from rest_framework import viewsets
-# from rest_framework import filters
-# from .models import Product, Cart, CartItem, Order
-# from .serializer import ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer
-#
-#
-# class ProductViewSet(viewsets.ModelViewSet):
-#     queryset = Product.objects.all()
-#     serializer_class = ProductSerializer
-#     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-#     search_fields = ['name', 'description', 'category', 'price', 'location']
-#     ordering_fields = ['name', 'price', 'category', 'brand', 'location', ]
-#
-#
-# class CartViewSet(viewsets.ModelViewSet):
-#     queryset = Cart.objects.all()
-#     serializer_class = CartSerializer
-#
-#
-# class CartItemViewSet(viewsets.ModelViewSet):
-#     queryset = CartItem.objects.all()
-#     serializer_class = CartItemSerializer
-#
-#
-# class OrderViewSet(viewsets.ModelViewSet):
-#     queryset = Order.objects.all()
-#     serializer_class = OrderSerializer
-#
-from django.core import paginator
 from django.core.paginator import Paginator
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -40,7 +9,10 @@ from django.db import models
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from .models import Product, Cart, CartItem, Order
+from user_registration.permissions import IsClient
 from .serializer import ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer
+import paypalrestsdk
+from django.urls import reverse
 from user_registration.models import CustomUser
 
 
@@ -93,7 +65,7 @@ class CartListAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CartItemListAPIView(APIView):
+class UserCartItemListAPIView(APIView):
     def get(self, request):
         cart_items = CartItem.objects.all()
         serializer = CartItemSerializer(cart_items, many=True)
@@ -107,23 +79,59 @@ class CartItemListAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AddToCartView(APIView):
+class UserAddToCartView(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
         cart, created = Cart.objects.get_or_create(user=request.user)
         cart_item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
         cart_item.quantity += 1
+
+        total_price = sum(item.product.price * item.quantity for item in cart.cartitem_set.all())
+
+        # Apply the discount if a promo code is set
+        if cart.promo_code:
+            discount = cart.promo_code.discount.amount
+            total_price *= (1 - discount / 100)
+
         cart_item.save()
-        return Response({"message": "Item added to your cart"}, status=status.HTTP_200_OK)
+        return Response({"message": "Item added to your cart", "total_price": total_price}, status=status.HTTP_200_OK)
 
 
-class RemoveFromCartView(APIView):
+class UserRemoveFromCartView(APIView):
     permission_classes = [IsAuthenticated]
+
     def delete(self, request, cart_item_id):
         cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=request.user)
         cart_item.delete()
         return Response({"message": "Item removed from your cart"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class AddToCartView(APIView):
+    def post(self, request, product_id, format=None):
+        product = get_object_or_404(Product, id=product_id)
+        cart = request.session.get('cart', {})
+        cart[product_id] = cart.get(product_id, 0) + 1
+        request.session['cart'] = cart
+
+        # Calculate the total price
+        total_price = sum(Product.objects.get(id=id).price * quantity for id, quantity in cart.items())
+
+        return Response({"message": "Item added to your cart", "total_price": total_price}, status=status.HTTP_200_OK)
+
+
+class CartDetailView(APIView):
+    def get(self, request, format=None):
+        cart = request.session.get('cart', {})
+        cart_items = Product.objects.filter(id__in=cart.keys())
+        for item in cart_items:
+            item.quantity = cart[str(item.id)]
+
+        # Calculate the total price
+        total_price = sum(item.price * item.quantity for item in cart_items)
+
+        return Response({"cart_items": [{"product_id": item.id, "quantity": item.quantity} for item in cart_items], "total_price": total_price}, status=status.HTTP_200_OK)
 
 
 class OrderList(APIView):
@@ -139,23 +147,6 @@ class OrderList(APIView):
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-# @api_view(http_method_names=['GET'])
-# def search_product(request: Request):
-#     # query = request.GET.get('q', '')
-#     # if query:
-#     #     products = Product.objects.filter(models.Q(header__icontains=query))
-#     # else:
-#     #     products = Product.objects.all()
-#     # serializer = ProductSerializer(products, many=True)
-#     # return Response(serializer.data, status=status.HTTP_200_OK)
-#     search = request.query_params.get('name')
-#     if search:
-#         products = Product.objects.filter(name__icontains=search)
-#     else:
-#         products = Product.objects.all()
-#     serializer = ProductSerializer(products, many=True)
-#     return Response(serializer.data)
 
 @api_view(http_method_names=['GET'])
 def search_product(request: Request, search):
@@ -187,5 +178,53 @@ def product_by_category(request: Request, category):
     return Response(data='Error', status=status.HTTP_404_NOT_FOUND)
 
 
+paypalrestsdk.configure({
+    "mode": "sandbox",  # sandbox or live
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET"
+})
+
+class CreatePaymentView(APIView):
+    def post(self, request):
+        # Create Payment
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"},
+            "redirect_urls": {
+                "return_url": "http://localhost:8000/payment/execute/",
+                "cancel_url": "http://localhost:8000/"},
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name": "item",
+                        "sku": "item",
+                        "price": '5.00',
+                        "currency": "USD",
+                        "quantity": 1}]},
+                "amount": {
+                    "total": str(total_price),
+                    "currency": "USD"},
+                "description": "This is the payment transaction description."}]})
+
+        # Create Payment and return status
+        if payment.create():
+            for link in payment.links:
+                if link.method == "REDIRECT":
+                    redirect_url = str(link.href)
+                    return Response({"redirect_url": redirect_url}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": payment.error}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ExecutePaymentView(APIView):
+    def post(self, request):
+        payment = paypalrestsdk.Payment.find(request.data['paymentID'])
+
+        # Execute payment
+        if payment.execute({"payer_id": request.data['payerID']}):
+            return Response({"payment": "success"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": payment.error}, status=status.HTTP_400_BAD_REQUEST)
 
 

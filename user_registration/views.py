@@ -47,11 +47,9 @@ class CreateUserAPIView(APIView):
         print("I am working")
 
         users = CustomUser.objects.all()
-        if users:
-            serializer = CustomUserSerializer(users, many=True)
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
-        print("No user found")
-        return Response(data='Errors', status=status.HTTP_404_NOT_FOUND)
+        serializer = CustomUserSerializer(users, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return Response(data='No user found', status=status.HTTP_404_NOT_FOUND)
 
 
     def post(self, request: Request):

@@ -3,7 +3,7 @@ from .models import CustomUser
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    user_type = serializers.CharField(default='user')
+    user_type = serializers.CharField(default='client')
     password = serializers.CharField(min_length=8, write_only=True)
 
     class Meta:

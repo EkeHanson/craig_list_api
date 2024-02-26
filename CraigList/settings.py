@@ -55,11 +55,11 @@ INSTALLED_APPS = [
     'products',
     
     # installed apps
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'social.apps.django_app.default',
+    # 'allauth',
+    # 'allauth.account',
+    # 'allauth.socialaccount',
+    # 'allauth.socialaccount.providers.google',
+    # 'social.apps.django_app.default',
     'drf_yasg',
     'rest_framework_simplejwt',
 ]

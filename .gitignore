@@ -1,5 +1,5 @@
 venv/
 External Libraries/
 venv/
-/.idea
+.idea/
 /db.sqlite3

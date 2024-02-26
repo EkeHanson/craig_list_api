@@ -58,7 +58,9 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField()
     slug = models.SlugField()
-    image_url = models.ImageField(upload_to='products/')  # Allows users to upload images
+    # image_url = models.ImageField(upload_to='products/')  # Allows users to upload images
+    image = models.ImageField(upload_to="media", null=True, blank=True)  # For uploaded files
+    image_url = models.URLField(null=True, blank=True)  # For image URLs
     condition = models.CharField(max_length=50)
     location = models.CharField(max_length=100)
     post_date = models.DateTimeField(auto_now_add=True)

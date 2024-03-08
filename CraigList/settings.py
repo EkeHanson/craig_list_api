@@ -62,9 +62,9 @@ INSTALLED_APPS = [
     # 'social.apps.django_app.default',
     'drf_yasg',
     'rest_framework_simplejwt',
-    'paypal.standard.ipn',
+    # 'paypal.standard.ipn',
     # 'paypalrestsdk'
-    'stripe',
+    # 'stripe',
 ]
 
 MIDDLEWARE = [
@@ -110,7 +110,7 @@ DATABASES = {
     }
 }
 
-# DATABASES['default'] = dj_database_url.parse('postgres://craig_list:zvEphYMNdjRqQCFErLUXVOj9WAWsNer5@dpg-cn6tmfgl5elc738j713g-a.oregon-postgres.render.com/craig_list')
+DATABASES['default'] = dj_database_url.parse('postgres://craig_list_api:GeevcQVGi8B8WUGDDVVOHJEdPrfYKbEz@dpg-cnle38n79t8c73alo120-a.oregon-postgres.render.com/craig_list_api')
 
 
 PAYPAL_CLIENT_ID = 'AVfeFBf4pzFqN7Ao68-AbnwastDT0dOkJjnTz77QnmUqO7UisAcH8dWVjGpSI4ZpCBMrTXw_5_mlP_tO'

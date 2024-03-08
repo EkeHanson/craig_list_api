@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 from .models import Product, Cart, CartItem, Order
 from user_registration.permissions import IsClient
 from .serializer import ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer
-import paypalrestsdk
+# import paypalrestsdk
 from django.urls import reverse
 from user_registration.models import CustomUser
 
@@ -178,53 +178,53 @@ def product_by_category(request: Request, category):
     return Response(data='Error', status=status.HTTP_404_NOT_FOUND)
 
 
-paypalrestsdk.configure({
-    "mode": "sandbox",  # sandbox or live
-    "client_id": "YOUR_CLIENT_ID",
-    "client_secret": "YOUR_CLIENT_SECRET"
-})
+# paypalrestsdk.configure({
+#     "mode": "sandbox",  # sandbox or live
+#     "client_id": "YOUR_CLIENT_ID",
+#     "client_secret": "YOUR_CLIENT_SECRET"
+# })
 
-class CreatePaymentView(APIView):
-    def post(self, request):
-        # Create Payment
-        payment = paypalrestsdk.Payment({
-            "intent": "sale",
-            "payer": {
-                "payment_method": "paypal"},
-            "redirect_urls": {
-                "return_url": "http://localhost:8000/payment/execute/",
-                "cancel_url": "http://localhost:8000/"},
-            "transactions": [{
-                "item_list": {
-                    "items": [{
-                        "name": "item",
-                        "sku": "item",
-                        "price": '5.00',
-                        "currency": "USD",
-                        "quantity": 1}]},
-                "amount": {
-                    "total": str(total_price),
-                    "currency": "USD"},
-                "description": "This is the payment transaction description."}]})
+# class CreatePaymentView(APIView):
+#     def post(self, request):
+#         # Create Payment
+#         payment = paypalrestsdk.Payment({
+#             "intent": "sale",
+#             "payer": {
+#                 "payment_method": "paypal"},
+#             "redirect_urls": {
+#                 "return_url": "http://localhost:8000/payment/execute/",
+#                 "cancel_url": "http://localhost:8000/"},
+#             "transactions": [{
+#                 "item_list": {
+#                     "items": [{
+#                         "name": "item",
+#                         "sku": "item",
+#                         "price": '5.00',
+#                         "currency": "USD",
+#                         "quantity": 1}]},
+#                 "amount": {
+#                     "total": str(total_price),
+#                     "currency": "USD"},
+#                 "description": "This is the payment transaction description."}]})
 
-        # Create Payment and return status
-        if payment.create():
-            for link in payment.links:
-                if link.method == "REDIRECT":
-                    redirect_url = str(link.href)
-                    return Response({"redirect_url": redirect_url}, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": payment.error}, status=status.HTTP_400_BAD_REQUEST)
+#         # Create Payment and return status
+#         if payment.create():
+#             for link in payment.links:
+#                 if link.method == "REDIRECT":
+#                     redirect_url = str(link.href)
+#                     return Response({"redirect_url": redirect_url}, status=status.HTTP_200_OK)
+#         else:
+#             return Response({"error": payment.error}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ExecutePaymentView(APIView):
-    def post(self, request):
-        payment = paypalrestsdk.Payment.find(request.data['paymentID'])
+# class ExecutePaymentView(APIView):
+#     def post(self, request):
+#         payment = paypalrestsdk.Payment.find(request.data['paymentID'])
 
-        # Execute payment
-        if payment.execute({"payer_id": request.data['payerID']}):
-            return Response({"payment": "success"}, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": payment.error}, status=status.HTTP_400_BAD_REQUEST)
+#         # Execute payment
+#         if payment.execute({"payer_id": request.data['payerID']}):
+#             return Response({"payment": "success"}, status=status.HTTP_200_OK)
+#         else:
+#             return Response({"error": payment.error}, status=status.HTTP_400_BAD_REQUEST)
 
 

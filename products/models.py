@@ -1,7 +1,7 @@
 from django.db import models
 from user_registration.models import CustomUser
 from django.shortcuts import reverse
-from django_countries.fields import CountryField
+# from django_countries.fields import CountryField
 
 category_choices = [
     ("Electronics", "electronics"),

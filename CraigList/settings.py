@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-u6@^h2f9^0h-=0s_j81_()ft+dhy5oj1iv6s0bt6b4x*u(6u2#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['craig-list-api.onrender.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['craig-list-api.onrender.com', '127.0.0.1', 'localhost', ]
 
 
 # AUTHENTICATION_BACKENDS = (
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'corsheaders',
     'django.contrib.staticfiles',
 
     # created apps
@@ -70,6 +71,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -80,6 +82,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'CraigList.urls'
+CORS_ALLOWED_ORIGINS = ['*']
 
 TEMPLATES = [
     {
